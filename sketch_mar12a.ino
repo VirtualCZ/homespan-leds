@@ -34,35 +34,14 @@
 //
 
 #if defined(CONFIG_IDF_TARGET_ESP32)
-
-#define NEOPIXEL_RGB_PIN 13
-#define NEOPIXEL_RGBW_PIN 32
-#define DOTSTAR_DATA_PIN 33
-#define DOTSTAR_CLOCK_PIN 27
 #define DEVICE_SUFFIX ""
-
-#elif defined(CONFIG_IDF_TARGET_ESP32S2)
-
-#define NEOPIXEL_RGB_PIN 17
-#define NEOPIXEL_RGBW_PIN 38
-#define DOTSTAR_DATA_PIN 3
-#define DOTSTAR_CLOCK_PIN 7
-#define DEVICE_SUFFIX "-S2"
-
-#elif defined(CONFIG_IDF_TARGET_ESP32C3)
-
-#define NEOPIXEL_RGB_PIN 0
-#define NEOPIXEL_RGBW_PIN 3
-#define DOTSTAR_DATA_PIN 7
-#define DOTSTAR_CLOCK_PIN 2
-
-#define DEVICE_SUFFIX "-C3"
 
 #endif
 
-#include "HomeSpan.h"
-#include "LED.h"
+#include "DEV_LED.h"
 #include "Effect.h"
+#include "LED.h"
+#include "HomeSpan.h"
 #include <FastLED.h>
 
 ///////////////////////////////
@@ -71,22 +50,25 @@
 
 
 void setup() {
-  NeoPixel_RGB* led;
-  EffectClass* effect;
+  DEV_LED* dev_led;
+  LED* led;
+  Effect* effect;
+
+  dev_led = new DEV_LED(13, 120);
 
   Serial.begin(115200);
+
+  homeSpan.enableOTA("13245678");
 
   homeSpan.begin(Category::Lighting, "RGB strips" DEVICE_SUFFIX);
 
   SPAN_ACCESSORY();  // create Bridge (note this sketch uses the SPAN_ACCESSORY() macro, introduced in v1.5.1 --- see the HomeSpan API Reference for details on this convenience macro)
 
   SPAN_ACCESSORY("RGB strip 1");
-  led = new NeoPixel_RGB();  // create 8-LED NeoPixel RGB Strand with full color control
+    led = new LED(*dev_led);  // create 8-LED NeoPixel RGB Strand with full color control
 
   SPAN_ACCESSORY("Effect Setter 1");
-  effect = new EffectClass(*led, 13, 120);  // create 8-LED NeoPixel RGB Strand with full color control
-
-  led->setUpdateCallback(*effect->updateReceived);
+    effect = new Effect(*dev_led);  // create 8-LED NeoPixel RGB Strand with full color control
 }
 
 ///////////////////////////////
